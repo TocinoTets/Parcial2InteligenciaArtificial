@@ -4,9 +4,9 @@ namespace IA.Agents
 {
     /// <summary>
     /// Estado Attack: sólo se alcanza si el TBA ya finalizó y existe al menos un Boid
-    /// dentro del rango de percepción (condición evaluada en Patrol).
+    /// dentro del rango de percepción (condición evaluada en Search).
     /// Al concretar un ataque exitoso reinicia el TBA y abandona el estado; si el
-    /// objetivo sale del rango de visión vuelve a Patrol SIN reiniciar el TBA.
+    /// objetivo sale del rango de visión vuelve a Search SIN reiniciar el TBA.
     /// </summary>
     public class HunterAttackState : HunterState
     {
@@ -27,7 +27,7 @@ namespace IA.Agents
 
             if (target == null)
             {
-                npc.FSM.ChangeState(HunterStateId.Patrol);
+                npc.FSM.ChangeState(HunterStateId.Search);
                 return;
             }
 
@@ -43,17 +43,17 @@ namespace IA.Agents
             if (target == null || !target.IsAlive)
             {
                 Log("Attack: el objetivo ya no está vivo → abandona Attack");
-                npc.FSM.ChangeState(HunterStateId.Patrol);
+                npc.FSM.ChangeState(HunterStateId.Search);
                 return;
             }
 
             float distance = AgentMath.FlatDistance(npc.Position, target.transform.position);
 
-            // El objetivo abandona el rango de visión → Patrol SIN reiniciar el TBA.
-            if (distance > npc.PerceptionRadius)
+            // El objetivo abandona el rango de visión → Search SIN reiniciar el TBA.
+            if (!npc.IsInVision(target.transform.position))
             {
-                Log("Attack: objetivo fuera del rango de visión → Patrol (TBA no se reinicia)");
-                npc.FSM.ChangeState(HunterStateId.Patrol);
+                Log($"Attack: objetivo fuera del rango de visión ({distance:0.0} m) → Search (TBA no se reinicia)");
+                npc.FSM.ChangeState(HunterStateId.Search);
                 return;
             }
 
@@ -72,7 +72,7 @@ namespace IA.Agents
                 npc.PerformMeleeAttack(target);
                 npc.ResetAttackTimer();
                 Log("Attack: ataque cuerpo a cuerpo concretado → reinicia TBA y abandona Attack");
-                npc.FSM.ChangeState(HunterStateId.Patrol);
+                npc.FSM.ChangeState(HunterStateId.Search);
                 return;
             }
 
@@ -85,12 +85,12 @@ namespace IA.Agents
                 npc.PerformRangedAttack(target);
                 npc.ResetAttackTimer();
                 Log("Attack: ataque a distancia concretado → reinicia TBA y abandona Attack");
-                npc.FSM.ChangeState(HunterStateId.Patrol);
+                npc.FSM.ChangeState(HunterStateId.Search);
                 return;
             }
 
             // Fuera de todo rango de ataque: perseguir hasta poder atacar.
-            npc.MoveTowards(target.transform.position);
+            npc.Pursue(target); // Pursuit con predicción de su posición futura
 
             chaseLogTimer += deltaTime;
             if (chaseLogTimer < 2f) return;

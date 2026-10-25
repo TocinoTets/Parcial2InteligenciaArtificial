@@ -97,9 +97,14 @@ namespace IA.Agents
 
         private void OnDrawGizmos()
         {
-            if (!Application.isPlaying || !showDebugInfo) return;
+            if (!Application.isPlaying || !IsAlive) return;
+            // Radios obligatorios: Separation, Alignment/Cohesion y visión.
             Gizmos.color = new Color(1f, 0.35f, 0.35f, 0.35f);
             Gizmos.DrawWireSphere(transform.position, separationRadius);
+            Gizmos.color = new Color(1f, 0.9f, 0.1f, 0.25f);
+            Gizmos.DrawWireSphere(transform.position, perceptionRadius);
+            Gizmos.color = new Color(1f, 0.2f, 1f, 0.2f);
+            Gizmos.DrawWireSphere(transform.position, viewRadius);
         }
 
         private void OnDrawGizmosSelected()

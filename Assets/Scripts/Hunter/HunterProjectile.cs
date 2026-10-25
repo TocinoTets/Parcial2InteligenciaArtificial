@@ -8,6 +8,7 @@ namespace IA.Agents
         [SerializeField] private float hitRadius = 0.7f;
         [SerializeField] private float maxLifetime = 5f;
 
+        private readonly Collider[] hits = new Collider[8];
         private BoidAgent target;
         private float speed = 18f;
         private float damage = 15f;
@@ -28,6 +29,18 @@ namespace IA.Agents
 
             if (life >= maxLifetime || target == null || !target.IsAlive)
             {
+                Destroy(gameObject);
+                return;
+            }
+
+            // Impacta al primer Boid vivo que toque (no sólo al objetivo) y se detiene en las paredes.
+            int count = Physics.OverlapSphereNonAlloc(transform.position, hitRadius, hits);
+            for (int i = 0; i < count; i++)
+            {
+                BoidAgent boid = hits[i].GetComponentInParent<BoidAgent>();
+                if (boid != null && boid.IsAlive) boid.TakeDamage(damage, "ataque a distancia");
+                else if (boid != null || hits[i].isTrigger) continue;
+
                 Destroy(gameObject);
                 return;
             }

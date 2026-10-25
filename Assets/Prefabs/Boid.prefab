@@ -58,7 +58,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -130,8 +130,8 @@ MonoBehaviour:
   agentId: 0
   separationRadius: 2.5
   perceptionRadius: 7
-  viewRadius: 12
-  interestSightRadius: 16
+  viewRadius: 8
+  interestSightRadius: 12
   maxSpeed: 6.5
   maxForce: 22
   turnSpeed: 9
@@ -142,13 +142,14 @@ MonoBehaviour:
   arriveWeight: 2.6
   wanderWeight: 0.8
   evadeMemoryDuration: 2.5
+  evadeSafeDistance: 18
   minSeparationDistance: 1.4
   maxHealth: 50
   interactionDistance: 2
   interactionInterval: 1
   interactionDamage: 25
   respawnDelay: 6
-  arenaHalfExtent: 25
+  arenaHalfExtent: 20
   showDebugInfo: 0
   showDebugLines: 1
   flockingMaterial: {fileID: 2100000, guid: 3d965cf6b8ec0364b9d0132d8139bf83, type: 2}

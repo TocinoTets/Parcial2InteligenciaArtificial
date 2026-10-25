@@ -3,7 +3,7 @@ using UnityEngine;
 namespace IA.Agents
 {
     /// <summary>
-    /// Objetos de interés que el Cazador genera durante Patrol, respetando el cupo de
+    /// Objetos de interés que el Cazador genera durante Search (dentro del Coto), respetando el cupo de
     /// maxActiveInterestObjects.
     /// </summary>
     public partial class HunterNPC
@@ -22,7 +22,7 @@ namespace IA.Agents
         {
             if (interestObjectPrefab == null)
             {
-                LogAction("Patrol: sin prefab de objeto de interés");
+                LogAction("Search: sin prefab de objeto de interés");
                 return false;
             }
 
@@ -32,7 +32,7 @@ namespace IA.Agents
 
             Instantiate(interestObjectPrefab, position, Quaternion.identity);
 
-            LogAction($"Patrol: genera objeto de interés en ({position.x:0.0}, {position.z:0.0}) [{ActiveInterestObjectCount()}/{maxActiveInterestObjects}]");
+            LogAction($"Search: genera objeto de interés en ({position.x:0.0}, {position.z:0.0}) [{ActiveInterestObjectCount()}/{maxActiveInterestObjects}]");
             return true;
         }
     }

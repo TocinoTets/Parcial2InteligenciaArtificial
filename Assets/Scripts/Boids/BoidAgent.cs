@@ -30,9 +30,9 @@ namespace IA.Agents
         [Tooltip("Alignment + Cohesion: radio de percepción del grupo.")]
         [SerializeField] private float perceptionRadius = 7f;
         [Tooltip("Rango de visión con el que detecta al NPC Cazador (dispara Evade).")]
-        [SerializeField] private float viewRadius = 12f;
+        [SerializeField] private float viewRadius = 8f;
         [Tooltip("Alcance limitado con el que detecta los objetos de interés del escenario.")]
-        [SerializeField] private float interestSightRadius = 16f;
+        [SerializeField] private float interestSightRadius = 12f;
 
         [Header("Movimiento")]
         [SerializeField] private float maxSpeed = 6.5f;

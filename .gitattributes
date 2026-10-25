@@ -30,6 +30,7 @@
 *.shadergraph           unity-json
 *.shadersubgraph        unity-json
 
+# Unity UI Toolkit files
 *.tss                   text diff=css linguist-language=css
 *.uss                   text diff=css linguist-language=css
 *.uxml                  text linguist-language=xml linguist-detectable

@@ -24,7 +24,10 @@ namespace IA.Agents
             {
                 case HunterStateId.Attack: return attackColor;
                 case HunterStateId.Gather: return gatherColor;
-                default: return patrolColor;
+                case HunterStateId.Flee: return fleeColor;
+                case HunterStateId.Exit: return exitColor;
+                case HunterStateId.Dead: return deadColor;
+                default: return searchColor;
             }
         }
 
@@ -58,15 +61,13 @@ namespace IA.Agents
             if (detectedDeadBoid != null)
                 Debug.DrawLine(origin, detectedDeadBoid.transform.position + Vector3.up, gatherColor);
 
-            if (waypoints != null && waypoints.Length > 1)
-            {
-                for (int i = 0; i < waypoints.Length; i++)
-                {
-                    if (waypoints[i] == null) continue;
-                    Transform next = waypoints[(i + 1) % waypoints.Length];
-                    if (next != null) Debug.DrawLine(waypoints[i].position, next.position, patrolColor);
-                }
-            }
+            if (visibleWolf != null)
+                Debug.DrawLine(origin, visibleWolf.Position + Vector3.up, fleeColor);
+
+            if (ChosenSafeZone != null)
+                Debug.DrawLine(origin, ChosenSafeZone.Position + Vector3.up * 3f, NavGraph.ZoneColor(Zone.Safe));
+
+            path.DrawDebug(transform.position, StateColor(fsm.CurrentId));
 
             if (lastMeleeTarget != null && Time.time - lastMeleeTime < 0.35f)
                 Debug.DrawLine(origin, lastMeleeTarget.transform.position + Vector3.up, Color.white);
@@ -82,11 +83,19 @@ namespace IA.Agents
         {
             textBuilder.Length = 0;
             textBuilder.Append("CAZADOR  [").Append(fsm.CurrentId).Append("]  ").Append(fsm.TimeInState.ToString("0.0")).Append("s\n");
+            textBuilder.Append("RECOLECCIONES ").Append(gathers).Append('/').Append(requiredGathers);
+            textBuilder.Append(" | zona ").Append(CurrentZone).Append('\n');
+            if (visibleWolf != null) textBuilder.Append("¡LOBO DETECTADO: ").Append(visibleWolf.name).Append("!\n");
+            if (ChosenSafeZone != null) textBuilder.Append("huye a Zona segura ").Append(ChosenSafeZone.SafeZoneId).Append('\n');
+            if (fsm.CurrentId == HunterStateId.Flee && ActionProgress > 0f)
+                textBuilder.Append("espera en zona segura: ").Append((ActionProgress * 100f).ToString("0")).Append("%\n");
+            if (fsm.CurrentId == HunterStateId.Dead)
+                textBuilder.Append("reaparece en ").Append((respawnTime * (1f - ActionProgress)).ToString("0.0")).Append("s\n");
             textBuilder.Append("TBA ").Append(tba.ToString("0.0")).Append("s → ");
             textBuilder.Append(IsAttackReady ? "LISTO" : $"faltan {(tba - attackTimer):0.0}s").Append('\n');
             textBuilder.Append("Range ").Append(rangeAttackRadius.ToString("0.0"));
             textBuilder.Append(" | Melee ").Append(meleeAttackRadius.ToString("0.0"));
-            textBuilder.Append(" | visión ").Append(perceptionRadius.ToString("0.0")).Append('\n');
+            textBuilder.Append(" | visión ").Append(visionRadius.ToString("0.0")).Append('\n');
 
             textBuilder.Append("objetivo: ");
             if (closestVisibleBoid != null)
@@ -122,8 +131,8 @@ namespace IA.Agents
 
         private void DrawRanges()
         {
-            Gizmos.color = new Color(patrolColor.r, patrolColor.g, patrolColor.b, 0.3f);
-            Gizmos.DrawWireSphere(transform.position, perceptionRadius);
+            Gizmos.color = new Color(searchColor.r, searchColor.g, searchColor.b, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, visionRadius);
 
             Gizmos.color = new Color(1f, 0.6f, 0.1f, 0.5f);
             Gizmos.DrawWireSphere(transform.position, rangeAttackRadius);

@@ -7,7 +7,7 @@ namespace IA.Agents
     /// su rango de percepción. Se dirige a él, ejecuta la recolección durante un tiempo
     /// determinado y el agente recolectado desaparece.
     /// Si el objetivo deja de estar disponible antes de completar la recolección,
-    /// abandona la acción y vuelve al comportamiento correspondiente (Patrol).
+    /// abandona la acción y vuelve al comportamiento correspondiente (Search).
     /// </summary>
     public class HunterGatherState : HunterState
     {
@@ -29,7 +29,7 @@ namespace IA.Agents
             if (target == null)
             {
                 Log("Gather: sin agente eliminado disponible");
-                npc.FSM.ChangeState(HunterStateId.Patrol);
+                npc.FSM.ChangeState(HunterStateId.Search);
                 return;
             }
 
@@ -42,7 +42,7 @@ namespace IA.Agents
             {
                 Log("Gather: el objetivo dejó de estar disponible → abandona la recolección");
                 npc.ActionProgress = 0f;
-                npc.FSM.ChangeState(HunterStateId.Patrol);
+                npc.FSM.ChangeState(HunterStateId.Search);
                 return;
             }
 
@@ -52,7 +52,7 @@ namespace IA.Agents
             {
                 collecting = false;
                 npc.ActionProgress = 0f;
-                npc.MoveTowards(target.transform.position);
+                npc.NavigateTo(target.transform.position); // Seek si está a la vista, A* si no
                 return;
             }
 
@@ -73,9 +73,10 @@ namespace IA.Agents
             BoidAgent harvested = target;
             harvested.Harvest();
             npc.ActionProgress = 0f;
-            Log($"Gather: {harvested.name} recolectado → desaparece del escenario");
+            npc.AddGather();
+            Log($"Gather: {harvested.name} recolectado → desaparece del escenario ({npc.Gathers}/{npc.RequiredGathers})");
 
-            npc.FSM.ChangeState(HunterStateId.Patrol);
+            npc.FSM.ChangeState(npc.Gathers >= npc.RequiredGathers ? HunterStateId.Exit : HunterStateId.Search);
         }
 
         public override void Exit()
