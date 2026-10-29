@@ -4501,7 +4501,7 @@ MonoBehaviour:
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 5.5
+  chaseSpeed: 6.1
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -10824,7 +10824,7 @@ MonoBehaviour:
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 5.5
+  chaseSpeed: 6.1
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -15482,7 +15482,7 @@ MonoBehaviour:
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 5.5
+  chaseSpeed: 6.1
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -16009,7 +16009,7 @@ MonoBehaviour:
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 5.5
+  chaseSpeed: 6.1
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -22126,8 +22126,8 @@ MonoBehaviour:
   turnSpeed: 7
   attackWindup: 0.45
   meleeStopDistance: 1.7
-  meleeDamage: 34
-  rangedDamage: 20
+  meleeDamage: 50
+  rangedDamage: 50
   projectilePrefab: {fileID: 4395372232642553609, guid: 13a3809e25841ac45be50c83dff0de34, type: 3}
   projectileSpeed: 18
   interestObjectPrefab: {fileID: 5190288213885325676, guid: d78a3b3c07fa7094689d55e61a9070c5, type: 3}
