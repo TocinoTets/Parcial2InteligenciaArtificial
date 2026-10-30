@@ -2,22 +2,9 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Feedback visual del Cazador: color según estado de la FSM, pulso de golpe,
-    /// etiqueta IMGUI de depuración, líneas de depuración y gizmos de rangos.
-    /// </summary>
+    //color segun el estado, lineas de debug y gizmos de los rangos
     public partial class HunterNPC
     {
-        // ---------------- feedback ----------------
-        public void LogAction(string action)
-        {
-            LastAction = action;
-            recentActions.Add(action);
-            while (recentActions.Count > 5) recentActions.RemoveAt(0);
-
-            Debug.Log($"[Cazador][{(fsm != null ? fsm.CurrentId.ToString() : "Init")}] {action}", this);
-        }
-
         public Color StateColor(HunterStateId id)
         {
             switch (id)
@@ -44,8 +31,7 @@ namespace IA.Agents
                 }
             }
 
-            // Pulso al concretar un ataque cuerpo a cuerpo.
-            float pulse = meleePulse > 0f ? Mathf.Sin(Mathf.Clamp01(meleePulse / 0.3f) * Mathf.PI) : 0f;
+            float pulse = meleePulse > 0f ? Mathf.Sin(Mathf.Clamp01(meleePulse / 0.3f) * Mathf.PI) : 0f; //se agranda un poco cuando pega
             transform.localScale = baseScale * (1f + 0.25f * pulse);
         }
 
@@ -73,55 +59,18 @@ namespace IA.Agents
                 Debug.DrawLine(origin, lastMeleeTarget.transform.position + Vector3.up, Color.white);
         }
 
-        private void OnGUI()
-        {
-            if (!showDebugInfo) return;
-            label.Draw(transform.position + Vector3.up * 2.6f, BuildLabelText(), StateColor(fsm.CurrentId), 270f, 150f, 12);
-        }
-
-        private string BuildLabelText()
-        {
-            textBuilder.Length = 0;
-            textBuilder.Append("CAZADOR  [").Append(fsm.CurrentId).Append("]  ").Append(fsm.TimeInState.ToString("0.0")).Append("s\n");
-            textBuilder.Append("RECOLECCIONES ").Append(gathers).Append('/').Append(requiredGathers);
-            textBuilder.Append(" | zona ").Append(CurrentZone).Append('\n');
-            if (visibleWolf != null) textBuilder.Append("¡LOBO DETECTADO: ").Append(visibleWolf.name).Append("!\n");
-            if (ChosenSafeZone != null) textBuilder.Append("huye a Zona segura ").Append(ChosenSafeZone.SafeZoneId).Append('\n');
-            if (fsm.CurrentId == HunterStateId.Flee && ActionProgress > 0f)
-                textBuilder.Append("espera en zona segura: ").Append((ActionProgress * 100f).ToString("0")).Append("%\n");
-            if (fsm.CurrentId == HunterStateId.Dead)
-                textBuilder.Append("reaparece en ").Append((respawnTime * (1f - ActionProgress)).ToString("0.0")).Append("s\n");
-            textBuilder.Append("TBA ").Append(tba.ToString("0.0")).Append("s → ");
-            textBuilder.Append(IsAttackReady ? "LISTO" : $"faltan {(tba - attackTimer):0.0}s").Append('\n');
-            textBuilder.Append("Range ").Append(rangeAttackRadius.ToString("0.0"));
-            textBuilder.Append(" | Melee ").Append(meleeAttackRadius.ToString("0.0"));
-            textBuilder.Append(" | visión ").Append(visionRadius.ToString("0.0")).Append('\n');
-
-            textBuilder.Append("objetivo: ");
-            if (closestVisibleBoid != null)
-            {
-                float distance = AgentMath.FlatDistance(transform.position, closestVisibleBoid.transform.position);
-                textBuilder.Append(closestVisibleBoid.name).Append(" (").Append(distance.ToString("0.0")).Append(" m, vida ")
-                           .Append(closestVisibleBoid.Health.ToString("0")).Append(')');
-            }
-            else textBuilder.Append("ninguno");
-
-            textBuilder.Append("\ndetectados: ").Append(detectedBoids.Count);
-            textBuilder.Append(" | eliminado: ").Append(detectedDeadBoid != null ? detectedDeadBoid.name : "-");
-            textBuilder.Append("\nacción: ").Append(LastAction);
-
-            if (fsm.CurrentId == HunterStateId.Gather && ActionProgress > 0f)
-                textBuilder.Append("\nrecolección: ").Append((ActionProgress * 100f).ToString("0")).Append('%');
-
-            textBuilder.Append('\n');
-            for (int i = recentActions.Count - 1; i >= 0; i--) textBuilder.Append(recentActions[i]).Append('\n');
-
-            return textBuilder.ToString();
-        }
-
         private void OnDrawGizmos()
         {
-            if (Application.isPlaying) DrawRanges();
+            if (!Application.isPlaying) return;
+            DrawRanges();
+
+            for (int i = 0; i < requiredGathers; i++) //una esfera por recoleccion, llena si ya la junto
+            {
+                Vector3 pos = transform.position + Vector3.up * 2.5f + transform.right * (i - (requiredGathers - 1) * 0.5f) * 0.6f;
+                Gizmos.color = i < gathers ? gatherColor : new Color(1f, 1f, 1f, 0.3f);
+                if (i < gathers) Gizmos.DrawSphere(pos, 0.2f);
+                else Gizmos.DrawWireSphere(pos, 0.2f);
+            }
         }
 
         private void OnDrawGizmosSelected()
@@ -129,7 +78,7 @@ namespace IA.Agents
             DrawRanges();
         }
 
-        private void DrawRanges()
+        private void DrawRanges() //vision, ataque a distancia y cuerpo a cuerpo
         {
             Gizmos.color = new Color(searchColor.r, searchColor.g, searchColor.b, 0.3f);
             Gizmos.DrawWireSphere(transform.position, visionRadius);

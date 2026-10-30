@@ -2,12 +2,7 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Estado Flee: la FSM lo activa (prioridad sobre todo salvo Dead) cuando el Cazador
-    /// percibe un lobo. Elige la Zona segura más cercana según la longitud del camino A*,
-    /// la recorre sin atacar ni recolectar, y espera SafeZoneWaitTime dentro de ella antes
-    /// de volver a Exit (si ya completó las recolecciones) o a Search.
-    /// </summary>
+    //vio un lobo, huye a la zona segura mas cercana por A* y espera ahi
     public class HunterFleeState : HunterState
     {
         private float waitTimer;
@@ -22,17 +17,11 @@ namespace IA.Agents
             waiting = false;
             waitTimer = 0f;
             npc.ActionProgress = 0f;
-            npc.ChosenSafeZone = ChooseSafeZone(out float length);
+            npc.ChosenSafeZone = ChooseSafeZone(out _);
 
-            string wolfName = npc.VisibleWolf != null ? npc.VisibleWolf.name : "?";
-            if (npc.ChosenSafeZone == null)
-            {
-                Log($"Flee: lobo {wolfName} detectado, pero no hay Zona segura alcanzable");
-                return;
-            }
+            if (npc.ChosenSafeZone == null) return; //no hay zona segura alcanzable
 
             npc.Path.SetPath(npc.Position, npc.ChosenSafeZone.Position, true);
-            Log($"Flee: lobo {wolfName} detectado → huye a la Zona segura {npc.ChosenSafeZone.SafeZoneId} (A* {length:0.0} m)");
         }
 
         public override void Tick(float deltaTime)
@@ -46,7 +35,7 @@ namespace IA.Agents
 
             if (!waiting)
             {
-                if (!npc.IsInSafeZone || npc.Path.IsActive)
+                if (!npc.IsInSafeZone || npc.Path.IsActive) //todavia no llego, sigue el camino
                 {
                     if (!npc.Path.IsActive) npc.Path.SetPath(npc.Position, safeZone.Position, true);
                     npc.FollowPath();
@@ -54,7 +43,6 @@ namespace IA.Agents
                 }
 
                 waiting = true;
-                Log($"Flee: dentro de la Zona segura {safeZone.SafeZoneId} → espera {npc.SafeZoneWaitTime:0.#} s");
             }
 
             npc.StopMoving();
@@ -62,8 +50,7 @@ namespace IA.Agents
             npc.ActionProgress = Mathf.Clamp01(waitTimer / Mathf.Max(0.01f, npc.SafeZoneWaitTime));
             if (waitTimer < npc.SafeZoneWaitTime) return;
 
-            Log("Flee: terminó la espera → retoma su actividad");
-            npc.FSM.ChangeState(npc.Gathers >= npc.RequiredGathers ? HunterStateId.Exit : HunterStateId.Search);
+            npc.FSM.ChangeState(npc.Gathers >= npc.RequiredGathers ? HunterStateId.Exit : HunterStateId.Search); //si ya junto todo va a la salida
         }
 
         public override void Exit()
@@ -73,8 +60,7 @@ namespace IA.Agents
             npc.Path.Clear();
         }
 
-        /// <summary>Zona segura con el camino A* más corto desde la posición actual.</summary>
-        private NavNode ChooseSafeZone(out float bestLength)
+        private NavNode ChooseSafeZone(out float bestLength) //elige la zona con el camino A* mas corto
         {
             bestLength = float.PositiveInfinity;
             NavGraph graph = NavGraph.Instance;

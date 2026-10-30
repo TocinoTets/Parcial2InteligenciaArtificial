@@ -3,21 +3,12 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Lobo: patrulla waypoints, detecta al Cazador con Field of View / Line of Sight,
-    /// aúlla para alertar a la manada, lo persigue y usa A* para ir a la última posición
-    /// conocida. Nunca usa nodos de Zonas seguras y abandona la persecución cuando el
-    /// Cazador entra en una.
-    ///
-    /// Su comportamiento se organiza con una FSM simple (WolfState): las transiciones las
-    /// deciden las condiciones del propio lobo (lo que percibe y las alertas que recibe).
-    /// El feedback visual está en WolfAgent.Feedback.cs.
-    /// </summary>
+    //lobo: patrulla, detecta al cazador con FOV y LOS, aulla para avisar a la manada y lo persigue
+    //nunca pasa por zonas seguras, si el cazador entra a una lo deja
     [RequireComponent(typeof(Collider))]
     public partial class WolfAgent : MonoBehaviour
     {
-        /// <summary>Manada: los lobos activos, usada para propagar el aullido.</summary>
-        public static readonly List<WolfAgent> All = new List<WolfAgent>();
+        public static readonly List<WolfAgent> All = new List<WolfAgent>(); //todos los lobos, se usa para el aullido
 
         [Header("Movimiento (debe ser más lento que el Cazador en todos sus estados)")]
         [SerializeField] private float patrolSpeed = 4f;
@@ -30,7 +21,6 @@ namespace IA.Agents
         [SerializeField, Range(10f, 360f)] private float viewAngle = 90f;
 
         [Header("Captura")]
-        [Tooltip("Si llega a menos de esta distancia del Cazador, lo alcanza (Cazador → Dead).")]
         [SerializeField] private float captureRadius = 1.3f;
 
         [Header("Patrullaje")]
@@ -41,7 +31,6 @@ namespace IA.Agents
         [Header("Búsqueda y alerta")]
         [SerializeField] private float searchDuration = 6f;
         [SerializeField] private float searchRadius = 16f;
-        [Tooltip("Tiempo mínimo entre aullidos mientras sigue viendo al Cazador.")]
         [SerializeField] private float howlCooldown = 3f;
 
         [Header("Referencias")]
@@ -61,7 +50,6 @@ namespace IA.Agents
         public Vector3 Position => transform.position;
         public WolfState State => state;
 
-        /// <summary>Configuración aplicada por el generador de escena.</summary>
         public void Configure(Transform[] newWaypoints, HunterNPC newHunter)
         {
             waypoints = newWaypoints;
@@ -100,8 +88,7 @@ namespace IA.Agents
 
             if (targetable && AgentMath.FlatDistance(Position, hunter.Position) <= captureRadius)
             {
-                Log("alcanza al Cazador");
-                hunter.NotifyCaught();
+                hunter.NotifyCaught(); //lo alcanzo
             }
 
             UpdateFeedback();
@@ -115,7 +102,6 @@ namespace IA.Agents
 
             if (state != WolfState.Chase)
             {
-                Log($"DETECTA al Cazador en ({lastKnownPosition.x:0.0}, {lastKnownPosition.z:0.0})");
                 SetState(WolfState.Chase);
                 Howl();
             }
@@ -125,11 +111,9 @@ namespace IA.Agents
             }
         }
 
-        /// <summary>Aullido: transmite la posición actual del Cazador como última posición conocida.</summary>
-        private void Howl()
+        private void Howl() //les pasa a los otros lobos donde esta el cazador
         {
             lastHowlTime = Time.time;
-            Log($"¡AUUU! aullido de alerta → posición ({lastKnownPosition.x:0.0}, {lastKnownPosition.z:0.0})");
 
             foreach (WolfAgent other in All)
                 if (other != this) other.ReceiveAlert(lastKnownPosition, this);
@@ -138,20 +122,16 @@ namespace IA.Agents
         public void ReceiveAlert(Vector3 position, WolfAgent sender)
         {
             alertReceivedTime = Time.time;
-            if (state == WolfState.Chase) return; // ya lo ve: sigue con su propia información
+            if (state == WolfState.Chase) return; //si ya lo esta viendo ignora el aviso
 
             lastKnownPosition = position;
             hasLastKnown = true;
-            Log($"recibe la alerta de {sender.name} → A* hacia ({position.x:0.0}, {position.z:0.0})");
             SetState(WolfState.GoToLastKnown);
         }
 
-        private void LoseTarget()
+        private void LoseTarget() //el cazador murio o entro a zona segura, vuelve a patrullar
         {
             hasLastKnown = false;
-            Log(hunter != null && hunter.FSM != null && hunter.FSM.CurrentId == HunterStateId.Dead
-                ? "el Cazador fue alcanzado → vuelve a patrullar"
-                : "el Cazador entró en una Zona segura → pierde el objetivo y vuelve a patrullar");
             SetState(WolfState.Patrol);
         }
 
@@ -186,7 +166,7 @@ namespace IA.Agents
                 return;
             }
 
-            if (!path.IsActive) RequestPath(waypoint.position, $"waypoint {waypoint.name} fuera de línea de visión");
+            if (!path.IsActive) RequestPath(waypoint.position); //no ve el waypoint, usa A*
             MoveTowards(path.NextPoint(Position), patrolSpeed);
         }
 
@@ -198,8 +178,7 @@ namespace IA.Agents
                 return;
             }
 
-            Log("pierde de vista al Cazador → A* a la última posición conocida");
-            SetState(WolfState.GoToLastKnown);
+            SetState(WolfState.GoToLastKnown); //lo perdio de vista, va a la ultima posicion
         }
 
         private void TickGoToLastKnown()
@@ -212,12 +191,18 @@ namespace IA.Agents
 
             if (AgentMath.FlatDistance(Position, lastKnownPosition) <= 1.5f)
             {
-                Log("llegó a la última posición conocida → busca en la zona");
                 SetState(WolfState.Search);
                 return;
             }
 
-            if (!path.IsActive && !RequestPath(lastKnownPosition, "última posición conocida"))
+            if (Perception.HasLineOfSight(Position, lastKnownPosition)) //si ve la posicion va directo, sin A*
+            {
+                path.Clear();
+                MoveTowards(lastKnownPosition, chaseSpeed);
+                return;
+            }
+
+            if (!path.IsActive && !RequestPath(lastKnownPosition))
             {
                 SetState(WolfState.Search);
                 return;
@@ -230,7 +215,6 @@ namespace IA.Agents
         {
             if (stateTimer >= searchDuration)
             {
-                Log("no encontró al Cazador → descarta la posición y vuelve a patrullar");
                 hasLastKnown = false;
                 SetState(WolfState.Patrol);
                 return;
@@ -239,7 +223,7 @@ namespace IA.Agents
             if (!path.IsActive && NavGraph.Instance != null)
             {
                 NavNode node = NavGraph.Instance.RandomNodeNear(lastKnownPosition, searchRadius, false);
-                if (node != null) RequestPath(node.Position, "búsqueda alrededor de la última posición");
+                if (node != null) RequestPath(node.Position); //busca por nodos random cerca
             }
 
             MoveTowards(path.NextPoint(Position), patrolSpeed);
@@ -249,7 +233,7 @@ namespace IA.Agents
         {
             if (loopMode == WaypointLoopMode.Loop)
             {
-                waypointIndex = (waypointIndex + 1) % waypoints.Length; // vuelve al primer waypoint
+                waypointIndex = (waypointIndex + 1) % waypoints.Length; //vuelve al primero
                 return;
             }
 
@@ -259,12 +243,9 @@ namespace IA.Agents
         }
 
         // ---------------- movimiento ----------------
-        /// <summary>A* sin nodos de Zonas seguras.</summary>
-        private bool RequestPath(Vector3 target, string reason)
+        private bool RequestPath(Vector3 target) //A* sin pasar por zonas seguras
         {
-            bool found = path.SetPath(Position, target, false);
-            Log(found ? $"A* ({reason}): {path.Points.Count} puntos" : $"A* ({reason}): sin camino");
-            return found;
+            return path.SetPath(Position, target, false);
         }
 
         private void MoveTowards(Vector3 target, float speed)

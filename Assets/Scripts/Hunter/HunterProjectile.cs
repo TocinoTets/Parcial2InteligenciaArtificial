@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>Proyectil del ataque a distancia del NPC Cazador (estado Attack).</summary>
+    //proyectil del ataque a distancia del cazador
     public class HunterProjectile : MonoBehaviour
     {
         [SerializeField] private float hitRadius = 0.7f;
@@ -27,13 +27,13 @@ namespace IA.Agents
             float dt = Time.deltaTime;
             life += dt;
 
-            if (life >= maxLifetime || target == null || !target.IsAlive)
+            if (life >= maxLifetime || target == null || !target.IsAlive) //se destruye si paso el tiempo o el objetivo murio
             {
                 Destroy(gameObject);
                 return;
             }
 
-            // Impacta al primer Boid vivo que toque (no sólo al objetivo) y se detiene en las paredes.
+            //le pega al primer boid que toque y se rompe contra las paredes
             int count = Physics.OverlapSphereNonAlloc(transform.position, hitRadius, hits);
             for (int i = 0; i < count; i++)
             {
@@ -50,10 +50,7 @@ namespace IA.Agents
             float distance = toTarget.magnitude;
             float step = speed * dt;
 
-            // El desplazamiento de este frame se compara con la distancia que falta: si el
-            // paso alcanza el radio de impacto el golpe se resuelve igualmente. Comprobar sólo
-            // la distancia actual dejaba atravesar al boid sin efecto cuando el paso era grande.
-            if (distance - step <= hitRadius)
+            if (distance - step <= hitRadius) //si en este frame lo alcanza le pega, asi no lo atraviesa
             {
                 target.TakeDamage(damage, "ataque a distancia");
                 Destroy(gameObject);

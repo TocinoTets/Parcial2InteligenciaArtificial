@@ -2,15 +2,10 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Actuadores de movimiento del Cazador: Seek directo (MoveTowards), Pursuit con
-    /// predicción y recorrido de caminos A* sobre el grafo. El Cazador queda confinado
-    /// dentro del mapa (clamp a ±arenaHalfExtent), no se teletransporta.
-    /// </summary>
+    //movimiento del cazador: seek, pursuit y caminos A*, no puede salir del mapa
     public partial class HunterNPC
     {
-        // ---------------- movimiento ----------------
-        public void MoveTowards(Vector3 worldTarget)
+        public void MoveTowards(Vector3 worldTarget) //seek directo
         {
             Vector3 desired = AgentMath.FlatDirection(transform.position, worldTarget) * moveSpeed;
 
@@ -24,22 +19,16 @@ namespace IA.Agents
             ApplyMotion();
         }
 
-        /// <summary>Pursuit: persigue la posición futura estimada del objetivo.</summary>
-        public void Pursue(BoidAgent target)
+        public void Pursue(BoidAgent target) //va a donde va a estar el boid, no a donde esta
         {
             Vector3 targetPosition = target.transform.position;
             float prediction = AgentMath.FlatDistance(transform.position, targetPosition) / Mathf.Max(0.1f, moveSpeed);
             MoveTowards(targetPosition + AgentMath.Flat(target.Velocity) * prediction);
         }
 
-        /// <summary>Calcula con A* un camino hacia target (puede atravesar Zonas seguras).</summary>
-        public bool RequestPath(Vector3 target)
+        public bool RequestPath(Vector3 target) //calcula el camino con A*
         {
-            bool found = path.SetPath(transform.position, target, true);
-            LogAction(found
-                ? $"A*: camino hacia ({target.x:0.0}, {target.z:0.0}) con {path.Points.Count} puntos"
-                : $"A*: sin camino hacia ({target.x:0.0}, {target.z:0.0})");
-            return found;
+            return path.SetPath(transform.position, target, true);
         }
 
         public void FollowPath()
@@ -47,19 +36,16 @@ namespace IA.Agents
             MoveTowards(path.NextPoint(transform.position));
         }
 
-        /// <summary>
-        /// Va hacia target: en línea recta (Seek) si está en línea de visión; si no, por A*.
-        /// </summary>
         public void NavigateTo(Vector3 target)
         {
-            if (Perception.HasLineOfSight(transform.position, target))
+            if (Perception.HasLineOfSight(transform.position, target)) //si lo ve va directo
             {
                 path.Clear();
                 MoveTowards(target);
                 return;
             }
 
-            if (!path.IsActive || AgentMath.FlatDistance(path.Destination, target) > 1.5f) RequestPath(target);
+            if (!path.IsActive || AgentMath.FlatDistance(path.Destination, target) > 1.5f) RequestPath(target); //si no lo ve usa A*
             FollowPath();
         }
 

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5682546664474619624}
   - component: {fileID: 1923261280118857709}
   - component: {fileID: 7962070922370512408}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: HunterProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}

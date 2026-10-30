@@ -2,14 +2,10 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Ataques del Cazador. Los estados de la FSM deciden cuándo llamarlos y aplican el
-    /// TBA; aquí sólo se ejecuta el golpe cuerpo a cuerpo o el proyectil a distancia.
-    /// </summary>
+    //ataques del cazador, la FSM decide cuando atacar
     public partial class HunterNPC
     {
-        // ---------------- ataques ----------------
-        public void ResetAttackTimer()
+        public void ResetAttackTimer() //reinicia el TBA
         {
             attackTimer = 0f;
         }
@@ -23,17 +19,15 @@ namespace IA.Agents
             lastMeleeTime = Time.time;
 
             target.TakeDamage(meleeDamage, "Cazador: cuerpo a cuerpo");
-            LogAction($"Attack: MELEE a {target.name} (-{meleeDamage:0} vida)");
         }
 
         public void PerformRangedAttack(BoidAgent target)
         {
             if (target == null) return;
 
-            if (projectilePrefab == null)
+            if (projectilePrefab == null) //si no hay prefab le hace el daño directo
             {
                 target.TakeDamage(rangedDamage, "Cazador: a distancia");
-                LogAction($"Attack: A DISTANCIA a {target.name} (-{rangedDamage:0} vida, sin prefab de proyectil)");
                 return;
             }
 
@@ -44,9 +38,7 @@ namespace IA.Agents
 
             GameObject projectile = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction));
             HunterProjectile component = projectile.GetComponent<HunterProjectile>();
-            if (component != null) component.Initialize(target, projectileSpeed, rangedDamage);
-
-            LogAction($"Attack: A DISTANCIA a {target.name} (proyectil, -{rangedDamage:0} vida al impactar)");
+            if (component != null) component.Initialize(target, projectileSpeed, rangedDamage); //el daño se aplica cuando impacta
         }
     }
 }

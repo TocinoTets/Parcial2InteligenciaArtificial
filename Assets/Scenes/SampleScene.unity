@@ -1208,7 +1208,7 @@ GameObject:
   - component: {fileID: 109474220}
   - component: {fileID: 109474222}
   - component: {fileID: 109474221}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hocico
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2376,7 +2376,7 @@ GameObject:
   - component: {fileID: 203591542}
   - component: {fileID: 203591544}
   - component: {fileID: 203591543}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hocico
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4460,7 +4460,7 @@ GameObject:
   - component: {fileID: 354636727}
   - component: {fileID: 354636726}
   - component: {fileID: 354636725}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Lobo_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4495,13 +4495,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee7175ce41f3d534a85297eefc087667, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IA.Agents.WolfAgent
-  showDebugInfo: 0
   patrolColor: {r: 0.45, g: 0.4, b: 0.35, a: 1}
   chaseColor: {r: 1, g: 0.1, b: 0.1, a: 1}
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 6.1
+  chaseSpeed: 5.5
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -10783,7 +10782,7 @@ GameObject:
   - component: {fileID: 841128983}
   - component: {fileID: 841128982}
   - component: {fileID: 841128981}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Lobo_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10818,13 +10817,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee7175ce41f3d534a85297eefc087667, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IA.Agents.WolfAgent
-  showDebugInfo: 0
   patrolColor: {r: 0.45, g: 0.4, b: 0.35, a: 1}
   chaseColor: {r: 1, g: 0.1, b: 0.1, a: 1}
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 6.1
+  chaseSpeed: 5.5
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -15441,7 +15439,7 @@ GameObject:
   - component: {fileID: 1165793908}
   - component: {fileID: 1165793907}
   - component: {fileID: 1165793906}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Lobo_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15476,13 +15474,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee7175ce41f3d534a85297eefc087667, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IA.Agents.WolfAgent
-  showDebugInfo: 0
   patrolColor: {r: 0.45, g: 0.4, b: 0.35, a: 1}
   chaseColor: {r: 1, g: 0.1, b: 0.1, a: 1}
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 6.1
+  chaseSpeed: 5.5
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -15954,6 +15951,11 @@ MonoBehaviour:
   - '#..#22#.#...#.#'
   - '###############'
   cellSize: 8
+  linkHeight: 1
+  linkRadius: 0.6
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 1
   drawGraph: 1
 --- !u!1 &1186879236
 GameObject:
@@ -15968,7 +15970,7 @@ GameObject:
   - component: {fileID: 1186879240}
   - component: {fileID: 1186879239}
   - component: {fileID: 1186879238}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Lobo_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -16003,13 +16005,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee7175ce41f3d534a85297eefc087667, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IA.Agents.WolfAgent
-  showDebugInfo: 0
   patrolColor: {r: 0.45, g: 0.4, b: 0.35, a: 1}
   chaseColor: {r: 1, g: 0.1, b: 0.1, a: 1}
   goToLastKnownColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   searchColor: {r: 0.9, g: 0.75, b: 0.2, a: 1}
   patrolSpeed: 4
-  chaseSpeed: 6.1
+  chaseSpeed: 5.5
   acceleration: 12
   turnSpeed: 6
   viewDistance: 13
@@ -22094,7 +22095,7 @@ GameObject:
   - component: {fileID: 1733235773}
   - component: {fileID: 1733235772}
   - component: {fileID: 1733235771}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cazador
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -22113,6 +22114,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de2ca08bc7066644e96971a9d126f5f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IA.Agents.HunterNPC
+  senseInterval: 0.1
   tba: 3
   rangeAttackRadius: 12
   meleeAttackRadius: 2.6
@@ -22137,7 +22139,6 @@ MonoBehaviour:
   gatherDuration: 2.5
   gatherRadius: 1.8
   arenaHalfExtent: 60
-  showDebugInfo: 0
   showDebugLines: 1
   searchColor: {r: 0.25, g: 0.7, b: 1, a: 1}
   attackColor: {r: 1, g: 0.15, b: 0.15, a: 1}
@@ -24038,7 +24039,7 @@ GameObject:
   - component: {fileID: 1878180674}
   - component: {fileID: 1878180676}
   - component: {fileID: 1878180675}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hocico
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26188,7 +26189,7 @@ GameObject:
   - component: {fileID: 2074559717}
   - component: {fileID: 2074559719}
   - component: {fileID: 2074559718}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hocico
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -1,50 +1,26 @@
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// NPC Cazador.
-    ///
-    /// Todo su comportamiento está gestionado por una Máquina de Estados Finita
-    /// (HunterFSM): Search, Attack, Gather, Flee, Exit y Dead. Este componente sólo aporta
-    /// sensores (boids y lobos, con línea de visión), actuadores (movimiento, A* y ataques)
-    /// y las variables de contexto. Ninguna transición se dispara desde aquí: los estados y
-    /// la propia FSM evalúan sus condiciones y llaman a FSM.ChangeState.
-    ///
-    /// El componente se reparte en archivos parciales:
-    ///   HunterNPC.Sensing.cs  → percepción de boids y lobos
-    ///   HunterNPC.Motion.cs   → movimiento, Pursuit y navegación con A*
-    ///   HunterNPC.Combat.cs   → ataques cuerpo a cuerpo y a distancia
-    ///   HunterNPC.Spawning.cs → objetos de interés generados en Search
-    ///   HunterNPC.Feedback.cs → feedback visual, etiqueta de depuración y gizmos
-    /// </summary>
+    //NPC cazador, todo su comportamiento lo maneja la FSM (HunterFSM)
     [RequireComponent(typeof(Collider))]
     public partial class HunterNPC : MonoBehaviour
     {
         private const float InterestObjectY = 0.8f;
 
         [Header("Variables obligatorias")]
-        [Tooltip("TBA - Time Between Attacks: tiempo mínimo entre ataques (segundos).")]
         [SerializeField] private float tba = 3f;
-        [Tooltip("RangeAttackRadius: distancia máxima para realizar un ataque a distancia.")]
         [SerializeField] private float rangeAttackRadius = 12f;
-        [Tooltip("MeleeAttackRadius: distancia máxima para realizar un ataque cuerpo a cuerpo.")]
         [SerializeField] private float meleeAttackRadius = 2.6f;
-        [Tooltip("RequiredGathers: recolecciones necesarias para dirigirse a la Salida.")]
         [SerializeField] private int requiredGathers = 3;
-        [Tooltip("RespawnTime: tiempo hasta reaparecer en la Zona inicial al ser alcanzado por un lobo.")]
         [SerializeField] private float respawnTime = 5f;
-        [Tooltip("SafeZoneWaitTime: tiempo de espera dentro de una Zona segura antes de retomar la actividad.")]
         [SerializeField] private float safeZoneWaitTime = 4f;
 
         [Header("Percepción (distancia + línea de visión)")]
-        [Tooltip("VisionRadius: radio de percepción de boids.")]
         [FormerlySerializedAs("perceptionRadius")]
         [SerializeField] private float visionRadius = 10f;
-        [Tooltip("Distancia máxima a la que detecta lobos (sin ángulo de visión).")]
         [SerializeField] private float wolfDetectionRadius = 8f;
 
         [Header("Movimiento")]
@@ -53,9 +29,7 @@ namespace IA.Agents
         [SerializeField] private float turnSpeed = 7f;
 
         [Header("Attack")]
-        [Tooltip("Tiempo de anticipación antes de concretar el golpe.")]
         [SerializeField] private float attackWindup = 0.45f;
-        [Tooltip("Distancia a la que se detiene para golpear cuerpo a cuerpo.")]
         [SerializeField] private float meleeStopDistance = 1.7f;
         [SerializeField] private float meleeDamage = 34f;
         [SerializeField] private float rangedDamage = 20f;
@@ -69,16 +43,13 @@ namespace IA.Agents
         [SerializeField] private float spawnAreaHalfExtent = 8f;
 
         [Header("Gather")]
-        [Tooltip("Duración de la acción de recolección.")]
         [SerializeField] private float gatherDuration = 2.5f;
         [SerializeField] private float gatherRadius = 1.8f;
 
         [Header("Escenario")]
-        [Tooltip("Mitad del tamaño del mapa completo (límite de movimiento).")]
         [SerializeField] private float arenaHalfExtent = 30f;
 
         [Header("Feedback visual")]
-        [SerializeField] private bool showDebugInfo = false;
         [SerializeField] private bool showDebugLines = true;
         [FormerlySerializedAs("patrolColor")]
         [SerializeField] private Color searchColor = new Color(0.25f, 0.7f, 1f);
@@ -90,10 +61,7 @@ namespace IA.Agents
 
         // ---------------- estado interno ----------------
         private readonly List<BoidAgent> detectedBoids = new List<BoidAgent>(16);
-        private readonly List<string> recentActions = new List<string>(6);
         private readonly Collider[] overlapBuffer = new Collider[64];
-        private readonly AgentLabel label = new AgentLabel();
-        private readonly StringBuilder textBuilder = new StringBuilder(320);
         private readonly PathFollower path = new PathFollower();
 
         private HunterFSM fsm;
@@ -143,23 +111,16 @@ namespace IA.Agents
 
         public WolfAgent VisibleWolf => visibleWolf;
         public int Gathers => gathers;
-        /// <summary>Un lobo lo alcanzó (evento percibido; la FSM decide la transición a Dead).</summary>
-        public bool WasCaught => wasCaught;
+        public bool WasCaught => wasCaught; //lo alcanzo un lobo, la FSM lo pasa a Dead
         public PathFollower Path => path;
         public Zone CurrentZone => NavGraph.Instance != null ? NavGraph.Instance.ZoneAt(transform.position) : Zone.Corridor;
         public bool IsInSafeZone => CurrentZone == Zone.Safe;
-        /// <summary>Los lobos sólo pueden detectarlo o alcanzarlo si está vivo y fuera de una Zona segura.</summary>
+        //los lobos solo lo pueden atrapar si esta vivo y fuera de zona segura
         public bool IsTargetable => fsm != null && fsm.CurrentId != HunterStateId.Dead && !IsInSafeZone;
-        /// <summary>Zona segura elegida en Flee (feedback).</summary>
         public NavNode ChosenSafeZone { get; set; }
 
-        /// <summary>Progreso (0-1) de la acción en curso, usado por el feedback visual.</summary>
         public float ActionProgress { get; set; }
 
-        public string LastAction { get; private set; } = "-";
-        public IReadOnlyList<string> RecentActions => recentActions;
-
-        /// <summary>Configuración aplicada por el generador de escena.</summary>
         public void Configure(GameObject newInterestObjectPrefab, GameObject newProjectilePrefab, float newArenaHalfExtent, float cotoHalfExtent)
         {
             interestObjectPrefab = newInterestObjectPrefab;
@@ -168,8 +129,7 @@ namespace IA.Agents
             spawnAreaHalfExtent = Mathf.Max(2f, cotoHalfExtent - 2f);
         }
 
-        /// <summary>Llamado por un lobo al alcanzarlo.</summary>
-        public void NotifyCaught()
+        public void NotifyCaught() //lo llama el lobo cuando lo alcanza
         {
             if (IsTargetable) wasCaught = true;
         }
@@ -185,7 +145,6 @@ namespace IA.Agents
             if (bodyCollider != null) bodyCollider.enabled = visible;
         }
 
-        /// <summary>Reaparece en la Zona inicial con el contador de recolecciones en cero.</summary>
         public void RespawnAtStart()
         {
             transform.position = spawnPosition;
@@ -196,7 +155,6 @@ namespace IA.Agents
             ChosenSafeZone = null;
             path.Clear();
             SetVisible(true);
-            LogAction("reaparece en la Zona inicial (recolecciones = 0)");
         }
 
         private void Awake()

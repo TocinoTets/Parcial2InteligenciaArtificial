@@ -2,11 +2,7 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Estado Dead: la FSM lo activa desde cualquier estado cuando un lobo alcanza al Cazador.
-    /// Desaparece de la escena sin responder a nada y, pasado RespawnTime, reaparece en la
-    /// Zona inicial con las recolecciones en cero y vuelve a Search.
-    /// </summary>
+    //lo mato un lobo, desaparece y reaparece en la zona inicial
     public class HunterDeadState : HunterState
     {
         private float timer;
@@ -20,7 +16,6 @@ namespace IA.Agents
             timer = 0f;
             npc.Path.Clear();
             npc.SetVisible(false);
-            Log($"Dead: alcanzado por un lobo → desaparece, reaparece en {npc.RespawnTime:0.#} s");
         }
 
         public override void Tick(float deltaTime)
@@ -29,7 +24,7 @@ namespace IA.Agents
             npc.ActionProgress = Mathf.Clamp01(timer / Mathf.Max(0.01f, npc.RespawnTime));
             if (timer < npc.RespawnTime) return;
 
-            npc.RespawnAtStart();
+            npc.RespawnAtStart(); //vuelve con las recolecciones en cero
             npc.FSM.ChangeState(HunterStateId.Search);
         }
 

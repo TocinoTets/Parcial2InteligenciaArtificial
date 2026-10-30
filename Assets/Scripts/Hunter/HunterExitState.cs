@@ -1,9 +1,6 @@
 namespace IA.Agents
 {
-    /// <summary>
-    /// Estado Exit: con RequiredGathers completas, se dirige a la Salida por A* sin atacar ni
-    /// recolectar. Al llegar completa su objetivo y reaparece en la Zona inicial (Search).
-    /// </summary>
+    //junto todas las recolecciones, va a la salida por A* sin atacar ni recolectar
     public class HunterExitState : HunterState
     {
         public HunterExitState(HunterNPC npc) : base(npc) { }
@@ -13,21 +10,19 @@ namespace IA.Agents
         public override void Enter()
         {
             npc.Path.Clear();
-            Log($"Exit: {npc.Gathers}/{npc.RequiredGathers} recolecciones → A* hacia la Salida");
         }
 
         public override void Tick(float deltaTime)
         {
             NavGraph graph = NavGraph.Instance;
-            if (graph == null || graph.ExitNode == null)
+            if (graph == null || graph.ExitNode == null) //si no hay grafo o salida se queda quieto
             {
                 npc.StopMoving();
                 return;
             }
 
-            if (npc.CurrentZone == Zone.Exit)
+            if (npc.CurrentZone == Zone.Exit) //llego a la salida, objetivo cumplido
             {
-                Log("Exit: llegó a la Salida → objetivo cumplido");
                 npc.RespawnAtStart();
                 npc.FSM.ChangeState(HunterStateId.Search);
                 return;

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2776351839597532021}
   - component: {fileID: 584747315487648287}
   - component: {fileID: 5563845958334009219}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Boid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,6 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ed9232b5f986e34d936a5c408a5aca8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IA.Agents.BoidAgent
+  senseInterval: 0.1
   agentId: 0
   separationRadius: 2.5
   perceptionRadius: 7
@@ -150,7 +151,6 @@ MonoBehaviour:
   interactionDamage: 25
   respawnDelay: 6
   arenaHalfExtent: 20
-  showDebugInfo: 0
   showDebugLines: 1
   flockingMaterial: {fileID: 2100000, guid: 3d965cf6b8ec0364b9d0132d8139bf83, type: 2}
   evadingMaterial: {fileID: 2100000, guid: e88f06d73ad69b34eb1820214a1b57f0, type: 2}

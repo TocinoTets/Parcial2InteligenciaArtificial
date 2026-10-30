@@ -3,21 +3,17 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Calcula un camino con A* sobre el NavGraph y lo recorre punto a punto.
-    /// Si el punto siguiente ya está en línea de visión, salta al siguiente (suavizado).
-    /// </summary>
+    //calcula el camino con A* y lo recorre punto por punto
     public class PathFollower
     {
         private readonly List<Vector3> points = new List<Vector3>(32);
         private int index;
 
-        public float Tolerance = 0.8f;
+        public float Tolerance = 0.8f; //que tan cerca tiene que llegar para pasar al siguiente punto
 
         public IReadOnlyList<Vector3> Points => points;
         public Vector3 Destination { get; private set; }
-        /// <summary>Hay un camino pendiente de recorrer.</summary>
-        public bool IsActive => index < points.Count;
+        public bool IsActive => index < points.Count; //todavia le queda camino
 
         public bool SetPath(Vector3 from, Vector3 to, bool allowSafe)
         {
@@ -28,7 +24,7 @@ namespace IA.Agents
             if (graph == null) return false;
 
             List<NavNode> nodes = AStar.FindPath(graph.ClosestNode(from, allowSafe), graph.ClosestNode(to, allowSafe), allowSafe);
-            if (nodes.Count == 0) return false;
+            if (nodes.Count == 0) return false; //no hay camino
 
             foreach (NavNode node in nodes) points.Add(node.Position);
             if (allowSafe || graph.ZoneAt(to) != Zone.Safe) points.Add(to);
@@ -44,11 +40,11 @@ namespace IA.Agents
         public Vector3 NextPoint(Vector3 position)
         {
             while (index < points.Count && AgentMath.FlatDistance(position, points[index]) <= Tolerance) index++;
-            while (index < points.Count - 1 && Perception.HasLineOfSight(position, points[index + 1])) index++;
+            if (index < points.Count - 1 && Perception.HasLineOfSight(position, points[index + 1])) index++; //si ya ve el siguiente punto se saltea el actual (un raycast por frame)
             return index < points.Count ? points[index] : position;
         }
 
-        public void DrawDebug(Vector3 from, Color color)
+        public void DrawDebug(Vector3 from, Color color) //dibuja el camino en la escena
         {
             if (!IsActive) return;
 

@@ -2,13 +2,9 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Actuadores del boid: composición de fuerzas de steering, traslación con wrap en la
-    /// arena, corrección dura anti-superposición y orientación hacia la velocidad.
-    /// </summary>
+
     public partial class BoidAgent
     {
-        // ---------------- actuadores (steering) ----------------
         private void ApplySteering(float dt)
         {
             Vector3 acceleration = ComputeSteering(dt);
@@ -130,20 +126,14 @@ namespace IA.Agents
             return SteerTo(desired);
         }
 
-        /// <summary>Evade: huye de la posición futura estimada del Cazador (persecución anticipada).</summary>
         private Vector3 Evade()
         {
-            // Con el Cazador a la vista se usan su posición y velocidad reales; si ya salió
-            // del rango de visión se sigue huyendo del último punto donde fue detectado.
             Vector3 threatPosition = detectedHunter != null ? detectedHunter.transform.position : lastThreatPosition;
             Vector3 threatVelocity = detectedHunter != null ? detectedHunter.Velocity : Vector3.zero;
 
             Vector3 toThreat = AgentMath.Flat(threatPosition - transform.position);
             float distance = toThreat.magnitude;
 
-            // Distancia de seguridad: la huida se desvanece al alejarse y se apaga bastante antes
-            // de la barrera. Así el boid no sigue empujando contra el borde (y, tras el teletransporte
-            // del wrap, continúa hacia dentro de la arena en vez de girar y volver a cruzar).
             float safeDistance = Mathf.Max(viewRadius + 0.01f, evadeSafeDistance);
             if (distance >= safeDistance) return Vector3.zero;
 
@@ -158,7 +148,6 @@ namespace IA.Agents
             return SteerTo(away * (maxSpeed * speedFactor));
         }
 
-        /// <summary>Arrive: se aproxima al objetivo frenando según la distancia, sin superponerse con él.</summary>
         private Vector3 Arrive(Vector3 target)
         {
             Vector3 offset = AgentMath.Flat(target - transform.position);
@@ -179,10 +168,7 @@ namespace IA.Agents
             return SteerTo(direction * (maxSpeed * 0.6f));
         }
 
-        /// <summary>
-        /// La arena es la barrera que define los límites del mapa: al tocar uno de sus
-        /// bordes el boid se transporta al lado opuesto conservando la otra coordenada.
-        /// </summary>
+
         private Vector3 WrapAroundArena(Vector3 position)
         {
             float span = arenaHalfExtent * 2f;

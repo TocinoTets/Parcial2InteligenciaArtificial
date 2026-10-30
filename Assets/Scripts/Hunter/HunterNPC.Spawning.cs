@@ -2,37 +2,23 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Objetos de interés que el Cazador genera durante Search (dentro del Coto), respetando el cupo de
-    /// maxActiveInterestObjects.
-    /// </summary>
+    //el cazador genera objetos de interes en Search, sin pasarse del maximo
     public partial class HunterNPC
     {
-        // ---------------- objetos de interés ----------------
-        public int ActiveInterestObjectCount()
+        public int ActiveInterestObjectCount() //cuantos objetos hay activos (lo lleva el propio InterestObject, sin buscar en toda la escena)
         {
-            InterestObject[] found = Object.FindObjectsByType<InterestObject>(FindObjectsSortMode.None);
-            int active = 0;
-            for (int i = 0; i < found.Length; i++)
-                if (found[i] != null && found[i].IsAvailable) active++;
-            return active;
+            return InterestObject.ActiveCount;
         }
 
         public bool SpawnInterestObject()
         {
-            if (interestObjectPrefab == null)
-            {
-                LogAction("Search: sin prefab de objeto de interés");
-                return false;
-            }
+            if (interestObjectPrefab == null) return false; //sin prefab no genera nada
 
             Vector3 position = AgentMath.RandomPointInSquare(spawnAreaHalfExtent, InterestObjectY);
-            for (int attempt = 0; attempt < 10 && AgentMath.FlatDistance(position, transform.position) < 6f; attempt++)
+            for (int attempt = 0; attempt < 10 && AgentMath.FlatDistance(position, transform.position) < 6f; attempt++) //intenta que no aparezca pegado al cazador
                 position = AgentMath.RandomPointInSquare(spawnAreaHalfExtent, InterestObjectY);
 
             Instantiate(interestObjectPrefab, position, Quaternion.identity);
-
-            LogAction($"Search: genera objeto de interés en ({position.x:0.0}, {position.z:0.0}) [{ActiveInterestObjectCount()}/{maxActiveInterestObjects}]");
             return true;
         }
     }

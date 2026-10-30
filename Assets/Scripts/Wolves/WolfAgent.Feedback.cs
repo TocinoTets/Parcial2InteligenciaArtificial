@@ -2,22 +2,17 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Feedback del lobo: color según estado, etiqueta (detección, aullido, alerta recibida,
-    /// última posición conocida), líneas de depuración del camino A* y gizmo del campo de visión.
-    /// </summary>
+    //color segun el estado, lineas de debug y gizmo del campo de vision del lobo
     public partial class WolfAgent
     {
         private const float FlashDuration = 1.5f;
 
         [Header("Feedback visual")]
-        [SerializeField] private bool showDebugInfo = false;
         [SerializeField] private Color patrolColor = new Color(0.45f, 0.4f, 0.35f);
         [SerializeField] private Color chaseColor = new Color(1f, 0.1f, 0.1f);
         [SerializeField] private Color goToLastKnownColor = new Color(1f, 0.5f, 0.1f);
         [SerializeField] private Color searchColor = new Color(0.9f, 0.75f, 0.2f);
 
-        private readonly AgentLabel label = new AgentLabel();
         private Renderer bodyRenderer;
         private MaterialPropertyBlock materialProperties;
         private float lastHowlTime = -100f;
@@ -30,11 +25,6 @@ namespace IA.Agents
         {
             bodyRenderer = GetComponentInChildren<Renderer>();
             materialProperties = new MaterialPropertyBlock();
-        }
-
-        private void Log(string message)
-        {
-            Debug.Log($"[{name}][{state}] {message}", this);
         }
 
         private Color StateColor()
@@ -62,7 +52,7 @@ namespace IA.Agents
             if (hasLastKnown) Debug.DrawLine(origin, lastKnownPosition + Vector3.up * 0.2f, goToLastKnownColor);
             path.DrawDebug(Position, StateColor());
 
-            if (Time.time - lastHowlTime < FlashDuration) DrawCircle(Position, captureRadius + (Time.time - lastHowlTime) * 10f, chaseColor);
+            if (Time.time - lastHowlTime < FlashDuration) DrawCircle(Position, captureRadius + (Time.time - lastHowlTime) * 10f, chaseColor); //circulo que se agranda cuando aulla
         }
 
         private static void DrawCircle(Vector3 center, float radius, Color color)
@@ -78,22 +68,9 @@ namespace IA.Agents
             }
         }
 
-        private void OnGUI()
-        {
-            if (!showDebugInfo) return;
-
-            string text = $"{name} [{state}]";
-            if (seesHunter) text += "\n¡VE AL CAZADOR!";
-            if (Time.time - lastHowlTime < FlashDuration) text += "\n¡AUUU! (alerta emitida)";
-            if (Time.time - alertReceivedTime < FlashDuration) text += "\nalerta recibida";
-            if (hasLastKnown) text += $"\núltima pos: ({lastKnownPosition.x:0.0}, {lastKnownPosition.z:0.0})";
-
-            label.Draw(transform.position + Vector3.up * 2.2f, text, StateColor(), 200f, 80f, 11);
-        }
-
         private void OnDrawGizmos()
         {
-            // Campo de visión: distancia máxima + ángulo.
+            //campo de vision: distancia + angulo
             Gizmos.color = seesHunter ? chaseColor : new Color(1f, 1f, 1f, 0.5f);
             Vector3 origin = transform.position + Vector3.up * 0.2f;
             Vector3 forward = AgentMath.Flat(transform.forward).normalized;

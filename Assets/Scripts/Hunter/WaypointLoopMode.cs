@@ -2,13 +2,10 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>Modo de recorrido de waypoints del patrullaje de los lobos.</summary>
-    public enum WaypointLoopMode
+    public enum WaypointLoopMode //como recorren los waypoints los lobos
     {
-        /// <summary>Al llegar al último waypoint vuelve al primero.</summary>
-        Loop,
+        Loop, //del ultimo vuelve al primero
 
-        /// <summary>Al llegar a un extremo recorre los waypoints en sentido inverso.</summary>
-        PingPong
+        PingPong //llega al final y vuelve para atras
     }
 }

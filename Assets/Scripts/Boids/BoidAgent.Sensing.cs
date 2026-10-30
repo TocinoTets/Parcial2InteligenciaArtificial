@@ -2,23 +2,28 @@ using UnityEngine;
 
 namespace IA.Agents
 {
-    /// <summary>
-    /// Sensores locales del boid y decisión de estado. No hay coordinación global:
-    /// todo lo que el agente sabe proviene de una única consulta de física sobre sus
-    /// propios radios.
-    /// </summary>
+
     public partial class BoidAgent
     {
+        [Header("Optimización")]
+        [SerializeField] private float senseInterval = 0.1f; //cada cuanto percibe, no hace falta hacerlo todos los frames
+
+        private float senseTimer;
+
         // ---------------- sensores ----------------
         private void Sense()
         {
+            senseTimer -= Time.deltaTime;
+            if (senseTimer > 0f) return;
+            senseTimer = senseInterval * Random.Range(0.8f, 1.2f); //un poco random para que no perciban todos en el mismo frame
+
             neighbors.Clear();
             deadNeighbors.Clear();
             visibleInterests.Clear();
             detectedHunter = null;
 
             float queryRadius = Mathf.Max(Mathf.Max(perceptionRadius, viewRadius), Mathf.Max(interestSightRadius, separationRadius));
-            int count = Physics.OverlapSphereNonAlloc(transform.position, queryRadius, overlapBuffer);
+            int count = Physics.OverlapSphereNonAlloc(transform.position, queryRadius, overlapBuffer, Perception.AgentsMask, QueryTriggerInteraction.Collide); //solo devuelve agentes
 
             float closestHunter = float.MaxValue;
 
@@ -27,8 +32,7 @@ namespace IA.Agents
                 Collider other = overlapBuffer[i];
                 if (other == null || other == bodyCollider) continue;
 
-                BoidAgent otherBoid = other.GetComponentInParent<BoidAgent>();
-                if (otherBoid != null)
+                if (other.TryGetComponent(out BoidAgent otherBoid))
                 {
                     if (otherBoid == this) continue;
 
@@ -45,8 +49,7 @@ namespace IA.Agents
                     continue;
                 }
 
-                HunterNPC hunter = other.GetComponentInParent<HunterNPC>();
-                if (hunter != null)
+                if (other.TryGetComponent(out HunterNPC hunter))
                 {
                     float distance = AgentMath.FlatDistance(transform.position, hunter.transform.position);
                     if (distance <= viewRadius && distance < closestHunter)
@@ -66,7 +69,6 @@ namespace IA.Agents
             }
         }
 
-        // ---------------- decisión (local, sin coordinación) ----------------
         private void UpdateState(float dt)
         {
             BoidState previous = state;
@@ -80,9 +82,6 @@ namespace IA.Agents
             }
             else if (evadeMemoryTimer > 0f)
             {
-                // Memoria de huida: sigue escapando del último punto donde vio al Cazador.
-                // Sin esto se detenía justo al salir de su rango de visión y la cohesión
-                // lo devolvía al borde, quedándose "al margen" del Cazador.
                 evadeMemoryTimer = Mathf.Max(0f, evadeMemoryTimer - dt);
                 state = BoidState.Evading;
             }
@@ -108,7 +107,6 @@ namespace IA.Agents
             if (previous != state)
             {
                 interactionTimer = 0f;
-                LogEvent($"cambia a {state}");
             }
         }
 
