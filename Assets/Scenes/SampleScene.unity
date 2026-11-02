@@ -4515,7 +4515,6 @@ MonoBehaviour:
   searchDuration: 6
   searchRadius: 16
   howlCooldown: 3
-  hunter: {fileID: 1733235771}
 --- !u!23 &354636726
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -10837,7 +10836,6 @@ MonoBehaviour:
   searchDuration: 6
   searchRadius: 16
   howlCooldown: 3
-  hunter: {fileID: 1733235771}
 --- !u!23 &841128982
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -15494,7 +15492,6 @@ MonoBehaviour:
   searchDuration: 6
   searchRadius: 16
   howlCooldown: 3
-  hunter: {fileID: 1733235771}
 --- !u!23 &1165793907
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -16025,7 +16022,6 @@ MonoBehaviour:
   searchDuration: 6
   searchRadius: 16
   howlCooldown: 3
-  hunter: {fileID: 1733235771}
 --- !u!23 &1186879239
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -22129,7 +22125,7 @@ MonoBehaviour:
   attackWindup: 0.45
   meleeStopDistance: 1.7
   meleeDamage: 50
-  rangedDamage: 50
+  rangedDamage: 20
   projectilePrefab: {fileID: 4395372232642553609, guid: 13a3809e25841ac45be50c83dff0de34, type: 3}
   projectileSpeed: 18
   interestObjectPrefab: {fileID: 5190288213885325676, guid: d78a3b3c07fa7094689d55e61a9070c5, type: 3}

@@ -33,10 +33,9 @@ namespace IA.Agents
         [SerializeField] private float searchRadius = 16f;
         [SerializeField] private float howlCooldown = 3f;
 
-        [Header("Referencias")]
-        [SerializeField] private HunterNPC hunter;
-
         private readonly PathFollower path = new PathFollower();
+        private readonly Collider[] overlapBuffer = new Collider[16];
+        private HunterNPC hunter;
         private WolfState state = WolfState.Patrol;
         private Vector3 velocity;
         private Vector3 lastKnownPosition;
@@ -50,10 +49,9 @@ namespace IA.Agents
         public Vector3 Position => transform.position;
         public WolfState State => state;
 
-        public void Configure(Transform[] newWaypoints, HunterNPC newHunter)
+        public void Configure(Transform[] newWaypoints)
         {
             waypoints = newWaypoints;
-            hunter = newHunter;
         }
 
         private void OnEnable() => All.Add(this);
@@ -63,7 +61,6 @@ namespace IA.Agents
         private void Awake()
         {
             groundY = transform.position.y;
-            if (hunter == null) hunter = FindFirstObjectByType<HunterNPC>();
             InitFeedback();
         }
 
@@ -72,8 +69,11 @@ namespace IA.Agents
             float dt = Time.deltaTime;
             stateTimer += dt;
 
+            HunterNPC sensed = SenseHunter();
+            if (sensed != null) hunter = sensed;
+
             bool targetable = hunter != null && hunter.IsTargetable;
-            seesHunter = targetable && Perception.CanSee(Position, transform.forward, hunter.Position, viewDistance, viewAngle);
+            seesHunter = sensed != null && targetable && Perception.CanSee(Position, transform.forward, sensed.Position, viewDistance, viewAngle);
 
             if (!targetable && (state != WolfState.Patrol || hasLastKnown)) LoseTarget();
             else if (seesHunter) OnHunterSeen();
@@ -86,15 +86,23 @@ namespace IA.Agents
                 case WolfState.Search: TickSearch(); break;
             }
 
-            if (targetable && AgentMath.FlatDistance(Position, hunter.Position) <= captureRadius)
+            if (sensed != null && targetable && AgentMath.FlatDistance(Position, sensed.Position) <= captureRadius)
             {
-                hunter.NotifyCaught(); //lo alcanzo
+                sensed.NotifyCaught(); //lo alcanzo
             }
 
             UpdateFeedback();
         }
 
         // ---------------- percepción y comunicación ----------------
+        private HunterNPC SenseHunter()
+        {
+            int count = Physics.OverlapSphereNonAlloc(Position, Mathf.Max(viewDistance, captureRadius), overlapBuffer, Perception.AgentsMask, QueryTriggerInteraction.Collide);
+            for (int i = 0; i < count; i++)
+                if (overlapBuffer[i].TryGetComponent(out HunterNPC found)) return found;
+            return null;
+        }
+
         private void OnHunterSeen()
         {
             lastKnownPosition = hunter.Position;
@@ -116,14 +124,15 @@ namespace IA.Agents
             lastHowlTime = Time.time;
 
             foreach (WolfAgent other in All)
-                if (other != this) other.ReceiveAlert(lastKnownPosition, this);
+                if (other != this) other.ReceiveAlert(lastKnownPosition, hunter);
         }
 
-        public void ReceiveAlert(Vector3 position, WolfAgent sender)
+        public void ReceiveAlert(Vector3 position, HunterNPC target)
         {
             alertReceivedTime = Time.time;
             if (state == WolfState.Chase) return; //si ya lo esta viendo ignora el aviso
 
+            hunter = target;
             lastKnownPosition = position;
             hasLastKnown = true;
             SetState(WolfState.GoToLastKnown);
@@ -132,6 +141,7 @@ namespace IA.Agents
         private void LoseTarget() //el cazador murio o entro a zona segura, vuelve a patrullar
         {
             hasLastKnown = false;
+            hunter = null;
             SetState(WolfState.Patrol);
         }
 
@@ -192,13 +202,6 @@ namespace IA.Agents
             if (AgentMath.FlatDistance(Position, lastKnownPosition) <= 1.5f)
             {
                 SetState(WolfState.Search);
-                return;
-            }
-
-            if (Perception.HasLineOfSight(Position, lastKnownPosition)) //si ve la posicion va directo, sin A*
-            {
-                path.Clear();
-                MoveTowards(lastKnownPosition, chaseSpeed);
                 return;
             }
 

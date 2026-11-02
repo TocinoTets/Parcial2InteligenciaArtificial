@@ -42,7 +42,7 @@ namespace IA.Agents
             {
                 collecting = false;
                 npc.ActionProgress = 0f;
-                npc.NavigateTo(target.transform.position); //seek si lo ve, A* si no
+                npc.NavigateTo(target.transform.position, npc.DetectedDeadBoid == target); //seek si lo ve, A* si no
                 return;
             }
 

@@ -62,9 +62,9 @@ namespace IA.EditorTools
 
             GameObject root = new GameObject(RootName);
             NavGraph graph = BuildMap(root.transform, groundMaterial);
-            HunterNPC hunter = BuildHunter(root.transform, hunterMaterial, graph, interestPrefab, projectilePrefab);
+            BuildHunter(root.transform, hunterMaterial, graph, interestPrefab, projectilePrefab);
             BuildBoids(root.transform, boidPrefab, boidMaterial, evadingMaterial, interactingMaterial, deadMaterial);
-            BuildWolves(root.transform, wolfMaterial, waypointMaterial, graph, hunter);
+            BuildWolves(root.transform, wolfMaterial, waypointMaterial, graph);
             FrameCamera();
 
             AssetDatabase.SaveAssets();
@@ -212,7 +212,7 @@ namespace IA.EditorTools
             }
         }
 
-        private static void BuildWolves(Transform parent, Material wolfMaterial, Material waypointMaterial, NavGraph graph, HunterNPC hunter)
+        private static void BuildWolves(Transform parent, Material wolfMaterial, Material waypointMaterial, NavGraph graph)
         {
             GameObject wolvesRoot = new GameObject("Lobos");
             wolvesRoot.transform.SetParent(parent, false);
@@ -257,7 +257,7 @@ namespace IA.EditorTools
                 snout.transform.localScale = new Vector3(0.35f, 0.3f, 0.5f);
                 Object.DestroyImmediate(snout.GetComponent<Collider>());
 
-                wolf.AddComponent<WolfAgent>().Configure(waypoints, hunter);
+                wolf.AddComponent<WolfAgent>().Configure(waypoints);
             }
         }
 

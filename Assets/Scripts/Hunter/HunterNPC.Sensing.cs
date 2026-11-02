@@ -15,6 +15,11 @@ namespace IA.Agents
             return Perception.CanSee(transform.position, transform.forward, point, visionRadius, 360f); //360 = ve para todos lados
         }
 
+        public bool IsDetected(BoidAgent boid)
+        {
+            return detectedBoids.Contains(boid);
+        }
+
         private void Sense()
         {
             if (fsm.CurrentId == HunterStateId.Dead) //muerto no percibe nada

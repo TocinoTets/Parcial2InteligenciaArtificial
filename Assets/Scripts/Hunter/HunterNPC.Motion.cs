@@ -36,9 +36,9 @@ namespace IA.Agents
             MoveTowards(path.NextPoint(transform.position));
         }
 
-        public void NavigateTo(Vector3 target)
+        public void NavigateTo(Vector3 target, bool visible)
         {
-            if (Perception.HasLineOfSight(transform.position, target)) //si lo ve va directo
+            if (visible) //si lo ve va directo
             {
                 path.Clear();
                 MoveTowards(target);

@@ -37,7 +37,7 @@ namespace IA.Agents
 
             float distance = AgentMath.FlatDistance(npc.Position, target.transform.position);
 
-            if (!npc.IsInVision(target.transform.position)) //lo perdio de vista, vuelve a Search sin reiniciar el TBA
+            if (!npc.IsDetected(target)) //lo perdio de vista, vuelve a Search sin reiniciar el TBA
             {
                 npc.FSM.ChangeState(HunterStateId.Search);
                 return;
